@@ -50,60 +50,57 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
 
         private void ProcessCell(Item item, ContentProperty propertyData, GridValueControlModel cell, Action direction)
         {
-            var docTypeAlias = cell.Value["dtgeContentTypeAlias"].ToString();
-            if (string.IsNullOrWhiteSpace(docTypeAlias))
+            var documentTypeAlias = cell.Value["dtgeContentTypeAlias"].ToString();
+            if (string.IsNullOrWhiteSpace(documentTypeAlias))
+                return;
+            var documentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(documentTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+
+            var cellValueJson = cell.Value["value"].ToString();
+            if (string.IsNullOrWhiteSpace(cellValueJson))
                 return;
 
-            var cellValue = cell.Value["value"].ToString();
-            if (string.IsNullOrWhiteSpace(cellValue))
+            var cellValue = JsonConvert.DeserializeObject(cellValueJson);
+            if (!(cellValue is JObject))
                 return;
 
-            var data = JsonConvert.DeserializeObject(cellValue);
-            if (!(data is JObject))
-                return;
-
-            var propValues = ((JObject)data).ToObject<Dictionary<string, object>>();
-            var docType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(
-                new ItemIdentifier(docTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+            var propertyValues = ((JObject)cellValue).ToObject<Dictionary<string, object>>();
 
             if (direction == Action.Packaging)
             {
-                item.Dependencies.Add(docType.UniqueId.ToString(), ItemProviderIds.documentTypeItemProviderGuid);
+                item.Dependencies.Add(documentType.UniqueId.ToString(), ItemProviderIds.documentTypeItemProviderGuid);
             }
 
-            var propertyItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
+            // get the ItemProvider for the ResolutionManager
+            var propertyDataItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
 
-            var properties = docType.Properties;
+            var properties = documentType.Properties;
 
             // check for compositions
-            foreach (var masterTypeAlias in docType.MasterDocumentTypes)
+            foreach (var masterDocumentTypeAlias in documentType.MasterDocumentTypes)
             {
-                var masterType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
-                if (masterType != null)
-                    properties.AddRange(masterType.Properties);
+                var masterDocumentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterDocumentTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+                if (masterDocumentType != null)
+                    properties.AddRange(masterDocumentType.Properties);
             }
 
-            foreach (var prop in properties)
+            foreach (var property in properties)
             {
                 object value = null;
-                if (!propValues.TryGetValue(prop.Alias, out value) || value == null)
+                if (!propertyValues.TryGetValue(property.Alias, out value) || value == null)
                     continue;
 
-                var datatype =
-                    ExecutionContext.DatabasePersistence.RetrieveItem<DataType>(
-                        new ItemIdentifier(
-                            prop.DataTypeDefinitionId.ToString(),
-                            ItemProviderIds.dataTypeItemProviderGuid));
+                var datatype = ExecutionContext.DatabasePersistence.RetrieveItem<DataType>(new ItemIdentifier(property.DataTypeDefinitionId.ToString(), ItemProviderIds.dataTypeItemProviderGuid));
 
-                var fakeItem = new ContentPropertyData
+                // create a pseudo item for sending through resolvers
+                var pseudoPropertyDataItem = new ContentPropertyData
                 {
                     ItemId = item.ItemId,
-                    Name = string.Format("{0} [{1}: Nested {2} ({3})]", item.Name, EditorAlias, datatype.PropertyEditorAlias, prop.Alias),
+                    Name = string.Format("{0} [{1}: Nested {2} ({3})]", item.Name, EditorAlias, datatype.PropertyEditorAlias, property.Alias),
                     Data = new List<ContentProperty>
                     {
                         new ContentProperty
                         {
-                            Alias = prop.Alias,
+                            Alias = property.Alias,
                             DataType = datatype.UniqueID,
                             PropertyEditorAlias = datatype.PropertyEditorAlias,
                             Value = value
@@ -115,44 +112,43 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
                 {
                     try
                     {
-                        // run the 'fake' item through Courier's data resolvers
-                        ResolutionManager.Instance.PackagingItem(fakeItem, propertyItemProvider);
+                        // run the resolvers (convert Ids/integers into UniqueIds/guids)
+                        ResolutionManager.Instance.PackagingItem(pseudoPropertyDataItem, propertyDataItemProvider);
                     }
                     catch (Exception ex)
                     {
-                        CourierLogHelper.Error<DocTypeGridEditorGridCellResolver>(
-                            string.Concat("Error packaging data value: ", fakeItem.Name), ex);
+                        CourierLogHelper.Error<DocTypeGridEditorGridCellResolver>(string.Concat("Error packaging data value: ", pseudoPropertyDataItem.Name), ex);
                     }
+                    // add in dependencies when packaging
+                    item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
+                    item.Resources.AddRange(pseudoPropertyDataItem.Resources);
                 }
                 else if (direction == Action.Extracting)
                 {
                     try
                     {
-                        // run the 'fake' item through Courier's data resolvers
-                        ResolutionManager.Instance.ExtractingItem(fakeItem, propertyItemProvider);
+                        // run the resolvers (convert UniqueIds/guids back to Ids/integers)
+                        ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
                     }
                     catch (Exception ex)
                     {
                         CourierLogHelper.Error<DocTypeGridEditorGridCellResolver>(
-                            string.Concat("Error extracting data value: ", fakeItem.Name), ex);
+                            string.Concat("Error extracting data value: ", pseudoPropertyDataItem.Name), ex);
                     }
                 }
-
-                // pass up the dependencies and resources
-                item.Dependencies.AddRange(fakeItem.Dependencies);
-                item.Resources.AddRange(fakeItem.Resources);
-
-                if (fakeItem.Data != null && fakeItem.Data.Any())
+                
+                if (pseudoPropertyDataItem.Data != null && pseudoPropertyDataItem.Data.Any())
                 {
-                    var firstDataType = fakeItem.Data.FirstOrDefault();
-                    if (firstDataType != null)
+                    // get the first (and only) property of the pseudo item created above
+                    var firstProperty = pseudoPropertyDataItem.Data.FirstOrDefault();
+                    if (firstProperty != null)
                     {
-                        // set the resolved property data value
-                        propValues[prop.Alias] = firstDataType.Value;
+                        // replace the property value with the resolved value
+                        propertyValues[property.Alias] = firstProperty.Value;
 
                         // (if packaging) add a dependency for the property's data-type
                         if (direction == Action.Packaging)
-                            item.Dependencies.Add(firstDataType.DataType.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
+                            item.Dependencies.Add(firstProperty.DataType.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
                     }
                 }
             }
@@ -161,7 +157,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
             // propValues to a JToken causes json objects to be converted into a string
             // (such as nested content inside a doctypegrid)
             var jsonString = new StringBuilder("{");
-            foreach (var val in propValues)
+            foreach (var val in propertyValues)
             {
                 jsonString.Append("\"");
                 jsonString.Append(val.Key);
