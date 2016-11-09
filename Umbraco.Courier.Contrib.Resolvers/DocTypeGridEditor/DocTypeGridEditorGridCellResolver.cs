@@ -12,6 +12,9 @@ using Umbraco.Courier.ItemProviders;
 
 namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
 {
+    /// <summary>
+    /// DocTypeGridEditor Grid Cell Resolver for DTGE by Matt Brailsford & Lee Kelleher.
+    /// </summary>
     public class DocTypeGridEditorGridCellResolver : GridCellResolverProvider
     {
         /// <summary>
