@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Umbraco.Courier.Core;
@@ -13,10 +14,13 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
 {
     public class DocTypeGridEditorGridCellResolver : GridCellResolverProvider
     {
-        private enum Direction
+        /// <summary>
+        /// Indicates if we are packaging or extracting.
+        /// </summary>
+        private enum Action
         {
-            Extracting,
-            Packaging
+            Packaging,
+            Extracting
         }
 
         public override bool ShouldRun(string view, GridValueControlModel cell)
@@ -36,15 +40,15 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
 
         public override void PackagingCell(Item item, ContentProperty propertyData, GridValueControlModel cell)
         {
-            ReplacePropertyDataIds(item, propertyData, cell, Direction.Packaging);
+            ProcessCell(item, propertyData, cell, Action.Packaging);
         }
 
         public override void ExtractingCell(Item item, ContentProperty propertyData, GridValueControlModel cell)
         {
-            ReplacePropertyDataIds(item, propertyData, cell, Direction.Extracting);
+            ProcessCell(item, propertyData, cell, Action.Extracting);
         }
 
-        private void ReplacePropertyDataIds(Item item, ContentProperty propertyData, GridValueControlModel cell, Direction direction)
+        private void ProcessCell(Item item, ContentProperty propertyData, GridValueControlModel cell, Action direction)
         {
             var docTypeAlias = cell.Value["dtgeContentTypeAlias"].ToString();
             if (string.IsNullOrWhiteSpace(docTypeAlias))
@@ -62,14 +66,24 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
             var docType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(
                 new ItemIdentifier(docTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
 
-            if (direction == Direction.Packaging)
+            if (direction == Action.Packaging)
             {
                 item.Dependencies.Add(docType.UniqueId.ToString(), ItemProviderIds.documentTypeItemProviderGuid);
             }
 
             var propertyItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
 
-            foreach (var prop in docType.Properties)
+            var properties = docType.Properties;
+
+            // check for compositions
+            foreach (var masterTypeAlias in docType.MasterDocumentTypes)
+            {
+                var masterType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+                if (masterType != null)
+                    properties.AddRange(masterType.Properties);
+            }
+
+            foreach (var prop in properties)
             {
                 object value = null;
                 if (!propValues.TryGetValue(prop.Alias, out value) || value == null)
@@ -92,12 +106,12 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
                             Alias = prop.Alias,
                             DataType = datatype.UniqueID,
                             PropertyEditorAlias = datatype.PropertyEditorAlias,
-                            Value = value.ToString()
+                            Value = value
                         }
                     }
                 };
 
-                if (direction == Direction.Packaging)
+                if (direction == Action.Packaging)
                 {
                     try
                     {
@@ -110,7 +124,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
                             string.Concat("Error packaging data value: ", fakeItem.Name), ex);
                     }
                 }
-                else if (direction == Direction.Extracting)
+                else if (direction == Action.Extracting)
                 {
                     try
                     {
@@ -137,13 +151,44 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
                         propValues[prop.Alias] = firstDataType.Value;
 
                         // (if packaging) add a dependency for the property's data-type
-                        if (direction == Direction.Packaging)
+                        if (direction == Action.Packaging)
                             item.Dependencies.Add(firstDataType.DataType.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
                     }
                 }
             }
 
-            cell.Value["value"] = JToken.FromObject(propValues);
+            // build up json as a string first, as directly converting 
+            // propValues to a JToken causes json objects to be converted into a string
+            // (such as nested content inside a doctypegrid)
+            var jsonString = new StringBuilder("{");
+            foreach (var val in propValues)
+            {
+                jsonString.Append("\"");
+                jsonString.Append(val.Key);
+                jsonString.Append("\":");
+
+                // check if it's a json object and not just a string
+                if (val.Value.ToString().Trim().StartsWith("["))
+                {
+                    jsonString.Append(val.Value);
+                }
+                else
+                {
+                    jsonString.Append("\"");
+                    jsonString.Append(val.Value);
+                    jsonString.Append("\"");
+                }
+
+                jsonString.Append(",");
+            }
+            if (jsonString.Length > 1)
+            {
+                jsonString.Remove(jsonString.Length - 1, 1);
+            }
+            jsonString.Append("}");
+
+            var tempCellValue = JToken.Parse(jsonString.ToString());
+            cell.Value["value"] = tempCellValue;
         }
     }
 }
