@@ -11,7 +11,10 @@ using Umbraco.Courier.ItemProviders;
 
 namespace Umbraco.Courier.Contrib.Resolvers.Vorto
 {
-    public class VortoDataResolver : PropertyDataResolverProvider
+    /// <summary>
+    /// Vorto Property Data Resolver for Vorto by Matt Brailsford.
+    /// </summary>
+    public class VortoPropertyDataResolver : PropertyDataResolverProvider
     {
         /// <summary>
         /// Alias of the editor this resolver should trigger on.
