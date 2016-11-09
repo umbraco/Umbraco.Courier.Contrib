@@ -85,11 +85,21 @@ namespace Umbraco.Courier.Contrib.Resolvers.NestedContent
                 if (doctypeAlias == null)
                     continue;
 
-                var doctype = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(doctypeAlias.ToString(), ItemProviderIds.documentTypeItemProviderGuid));
-                if (doctype == null)
+                var docType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(doctypeAlias.ToString(), ItemProviderIds.documentTypeItemProviderGuid));
+                if (docType == null)
                     continue;
 
-                foreach (var propertyType in doctype.Properties)
+                var properties = docType.Properties;
+
+                // check for compositions
+                foreach (var masterTypeAlias in docType.MasterDocumentTypes)
+                {
+                    var masterType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+                    if (masterType != null)
+                        properties.AddRange(masterType.Properties);
+                }
+
+                foreach (var propertyType in properties)
                 {
                     var value = ncItem[propertyType.Alias];
                     if (value != null)
