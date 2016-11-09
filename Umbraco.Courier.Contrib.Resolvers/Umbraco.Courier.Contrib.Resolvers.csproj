@@ -234,7 +234,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DocTypeGridEditor\DocTypeGridEditorGridCell.cs" />
+    <Compile Include="DocTypeGridEditor\DocTypeGridEditorGridCellResolver.cs" />
     <Compile Include="LeBlender\LeBlenderGridCellResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Vorto\VortoDataResolver.cs" />
