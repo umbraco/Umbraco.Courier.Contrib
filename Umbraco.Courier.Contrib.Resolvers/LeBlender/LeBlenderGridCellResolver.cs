@@ -13,15 +13,6 @@ namespace Umbraco.Courier.Contrib.Resolvers.LeBlender
 {
     public class LeBlenderGridCellResolver : GridCellResolverProvider
     {
-        /// <summary>
-        /// Indicates if we are packaging or extracting.
-        /// </summary>
-        private enum Action
-        {
-            Packaging,
-            Extracting
-        }
-
         public override bool ShouldRun(string view, GridValueControlModel cell)
         {
             return view.Contains("leblender");

@@ -17,15 +17,6 @@ namespace Umbraco.Courier.Contrib.Resolvers.DocTypeGridEditor
     /// </summary>
     public class DocTypeGridEditorGridCellResolver : GridCellResolverProvider
     {
-        /// <summary>
-        /// Indicates if we are packaging or extracting.
-        /// </summary>
-        private enum Action
-        {
-            Packaging,
-            Extracting
-        }
-
         public override bool ShouldRun(string view, GridValueControlModel cell)
         {
             try

@@ -285,6 +285,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Action.cs" />
     <Compile Include="DocTypeGridEditor\DocTypeGridEditorGridCellResolver.cs" />
     <Compile Include="LeBlender\LeBlenderGridCellResolver.cs" />
     <Compile Include="NestedContent\NestedContentPropertyDataResolver.cs" />

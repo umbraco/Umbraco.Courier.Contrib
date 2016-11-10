@@ -25,15 +25,6 @@ namespace Umbraco.Courier.Contrib.Resolvers.Vorto
         }
 
         /// <summary>
-        /// Indicates if we are packaging or extracting.
-        /// </summary>
-        private enum Action
-        {
-            Packaging,
-            Extracting
-        }
-
-        /// <summary>
         /// This is triggered when the property is about to be packaged (Umbraco -> Courier).
         /// </summary>
         /// <param name="item">Item being packaged</param>
