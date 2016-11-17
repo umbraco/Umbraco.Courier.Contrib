@@ -32,16 +32,16 @@ namespace Umbraco.Courier.Contrib.Resolvers.LeBlender
 
         private void ProcessCell(Item item, ContentProperty propertyData, GridValueControlModel cell, Action action)
         {
+            // cancel if there's no values
+            if (cell.Value == null || cell.Value.HasValues == false)
+                return;
+                
             var dataTypeService = ApplicationContext.Current.Services.DataTypeService;
             // get the ItemProvider for the ResolutionManager
             var propertyDataItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
 
             // create object to store resolved properties
             var resolvedProperties = new JObject();
-
-            // cancel if there's no values
-            if (cell.Value == null || cell.Value.HasValues == false)
-                return;
             
             // actual data seems to be nested inside an object...
             var properties = cell.Value.First;
@@ -51,6 +51,9 @@ namespace Umbraco.Courier.Contrib.Resolvers.LeBlender
             {
                 // deserialize the value of the wrapper object into a LeBlenderProperty object
                 var leBlenderPropertyJson = leBlenderPropertyWrapper.Value.ToString() as string;
+                // continue if there's no data stored
+                if(String.IsNullOrEmpty(leBlenderPropertyJson)) continue;
+                
                 var leBlenderProperty = JsonConvert.DeserializeObject<LeBlenderProperty>(leBlenderPropertyJson);
                 
                 // get the DataType of the property
