@@ -9,7 +9,7 @@ using Umbraco.Courier.Core.ProviderModel;
 using Umbraco.Courier.DataResolvers;
 using Umbraco.Courier.ItemProviders;
 
-namespace Umbraco.Courier.Contrib.Resolvers.Vorto
+namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 {
     /// <summary>
     /// Vorto Property Data Resolver for Vorto by Matt Brailsford.

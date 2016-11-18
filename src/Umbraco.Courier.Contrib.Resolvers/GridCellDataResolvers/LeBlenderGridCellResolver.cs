@@ -9,7 +9,7 @@ using Umbraco.Courier.Core.ProviderModel;
 using Umbraco.Courier.DataResolvers.PropertyDataResolvers;
 using Umbraco.Courier.ItemProviders;
 
-namespace Umbraco.Courier.Contrib.Resolvers.LeBlender
+namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
 {
     public class LeBlenderGridCellResolver : GridCellResolverProvider
     {
