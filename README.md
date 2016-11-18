@@ -54,7 +54,7 @@ For any Courier specific enquiries, please use the [Umbraco Issue Tracker (for C
 Special thanks to the following community members for providing the initial data-resolver code for this project.
 
 * [Umbrella](https://github.com/UmbrellaInc) and [Lee Kelleher](https://github.com/leekelleher)
-* [DIS/PLAY](https://github.com/display) and [Rasmus Pedersen](https://github.com/rasmusjp)
+* [DIS/PLAY](https://github.com/display), [Rasmus Pedersen](https://github.com/rasmusjp) and [Kasper Kristensen](https://github.com/kasperhhk)
 * [Matt Brailsford](https://github.com/mattbrailsford)
 
 
