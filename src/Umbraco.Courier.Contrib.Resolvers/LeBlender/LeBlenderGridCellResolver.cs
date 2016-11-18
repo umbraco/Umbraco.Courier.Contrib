@@ -89,7 +89,11 @@ namespace Umbraco.Courier.Contrib.Resolvers.LeBlender
                     ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
                 }
                 // replace the property value with the resolved value
-                leBlenderProperty.Value = pseudoPropertyDataItem.Data.First().Value.ToString();
+                if (pseudoPropertyDataItem.Data.First().Value == null) {
+                    leBlenderProperty.Value = null;
+                } else {
+                    leBlenderProperty.Value = pseudoPropertyDataItem.Data.First().Value.ToString();
+                }
                 // add the resolved property to the resolved properties object
                 resolvedProperties.Add(leBlenderProperty.EditorAlias, JObject.FromObject(leBlenderProperty));
             }
