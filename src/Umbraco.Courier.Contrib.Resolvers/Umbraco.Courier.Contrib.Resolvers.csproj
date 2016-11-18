@@ -286,11 +286,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Action.cs" />
-    <Compile Include="DocTypeGridEditor\DocTypeGridEditorGridCellResolver.cs" />
-    <Compile Include="LeBlender\LeBlenderGridCellResolver.cs" />
-    <Compile Include="NestedContent\NestedContentPropertyDataResolver.cs" />
+    <Compile Include="GridCellDataResolvers\DocTypeGridEditorGridCellResolver.cs" />
+    <Compile Include="GridCellDataResolvers\LeBlenderGridCellResolver.cs" />
+    <Compile Include="PropertyDataResolvers\NestedContentPropertyDataResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Vorto\VortoPropertyDataResolver.cs" />
+    <Compile Include="PropertyDataResolvers\VortoPropertyDataResolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

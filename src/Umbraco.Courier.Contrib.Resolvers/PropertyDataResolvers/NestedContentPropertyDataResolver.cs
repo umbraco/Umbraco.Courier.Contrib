@@ -10,7 +10,7 @@ using Umbraco.Courier.Core.ProviderModel;
 using Umbraco.Courier.DataResolvers;
 using Umbraco.Courier.ItemProviders;
 
-namespace Umbraco.Courier.Contrib.Resolvers.NestedContent
+namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 {
     /// <summary>
     /// Nested Content Property Data Resolver for Nested Content by Matt Brailsford & Lee Kelleher.
