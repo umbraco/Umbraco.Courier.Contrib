@@ -91,11 +91,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                     ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
                 }
                 // replace the property value with the resolved value
-                if (pseudoPropertyDataItem.Data.First().Value == null) {
-                    leBlenderProperty.Value = null;
-                } else {
-                    leBlenderProperty.Value = pseudoPropertyDataItem.Data.First().Value.ToString();
-                }
+                leBlenderProperty.Value = pseudoPropertyDataItem.Data.First().Value;
                 // add the resolved property to the resolved properties object
                 resolvedProperties.Add(leBlenderProperty.EditorAlias, JObject.FromObject(leBlenderProperty));
             }
@@ -103,10 +99,42 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
             cell.Value = JToken.FromObject(new JArray(resolvedProperties));
         }
 
-        public class LeBlenderProperty
-        {
+        public class LeBlenderProperty {
+            private bool isQuoted;
+            private JRaw jrawValue;
+
             [JsonProperty("value")]
-            public string Value { get; set; }
+            public JRaw JRawValue {
+                get { return jrawValue; }
+                set {
+                    jrawValue = value;
+                    isQuoted = isQuoted || value.ToString().Trim().StartsWith("\"");
+                }
+            }
+            [JsonIgnore]
+            public object Value {
+                get {
+                    if (isQuoted) {
+                        // Umbraco.DropDown and other prevalue data types want an unquoted string
+                        // so we need to strip the leading and trailing quotation marks now
+                        // then put them back later
+                        string trimmed = JRawValue.ToString().Trim();
+                        trimmed = trimmed.Substring(1, trimmed.Length - 2);
+                        return trimmed;
+                    }
+                    // Complex data types like RJP.MultiUrlPicker expect the json as a string
+                    return JRawValue.ToString();
+                }
+                set {
+                    string str = value as string;
+                    if (str != null && isQuoted) {
+                        // We stripped quotes off so put them back now
+                        JRawValue = new JRaw("\"" + str + "\"");
+                    } else {
+                        JRawValue = new JRaw(value);
+                    }
+                }
+            }
             [JsonProperty("dataTypeGuid")]
             public Guid DataTypeGuid { get; set; }
             [JsonProperty("editorAlias")]
