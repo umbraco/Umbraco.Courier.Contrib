@@ -9,70 +9,63 @@ using Umbraco.Courier.Core.ProviderModel;
 using Umbraco.Courier.DataResolvers.PropertyDataResolvers;
 using Umbraco.Courier.ItemProviders;
 
-namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
-{
-    public class LeBlenderGridCellResolver : GridCellResolverProvider
-    {
-        public override bool ShouldRun(string view, GridValueControlModel cell)
-        {
+namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers {
+    public class LeBlenderGridCellResolver : GridCellResolverProvider {
+        public override bool ShouldRun(string view, GridValueControlModel cell) {
             return view.Contains("leblender");
         }
 
-        public override void PackagingCell(Item item, ContentProperty propertyData, GridValueControlModel cell)
-        {
+        public override void PackagingCell(Item item, ContentProperty propertyData, GridValueControlModel cell) {
             ProcessCell(item, propertyData, cell, Action.Packaging);
             base.PackagingCell(item, propertyData, cell);
         }
 
-        public override void ExtractingCell(Item item, ContentProperty propertyData, GridValueControlModel cell)
-        {
+        public override void ExtractingCell(Item item, ContentProperty propertyData, GridValueControlModel cell) {
             ProcessCell(item, propertyData, cell, Action.Extracting);
             base.ExtractingCell(item, propertyData, cell);
         }
 
-        private void ProcessCell(Item item, ContentProperty propertyData, GridValueControlModel cell, Action action)
-        {
+        private void ProcessCell(Item item, ContentProperty propertyData, GridValueControlModel cell, Action action) {
             // cancel if there's no values
             if (cell.Value == null || cell.Value.HasValues == false)
                 return;
-                
+
             var dataTypeService = ApplicationContext.Current.Services.DataTypeService;
             // get the ItemProvider for the ResolutionManager
             var propertyDataItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
 
-            // create object to store resolved properties
-            var resolvedProperties = new JObject();
-            
-            // actual data seems to be nested inside an object...
-            var properties = cell.Value.First;
-            
-            // loop through each of the property objects
-            foreach (dynamic leBlenderPropertyWrapper in properties)
-            {
-                // deserialize the value of the wrapper object into a LeBlenderProperty object
-                var leBlenderPropertyJson = leBlenderPropertyWrapper.Value.ToString() as string;
-                // continue if there's no data stored
-                if(String.IsNullOrEmpty(leBlenderPropertyJson)) continue;
-                
-                var leBlenderProperty = JsonConvert.DeserializeObject<LeBlenderProperty>(leBlenderPropertyJson);
-                
-                // get the DataType of the property
-                var dataType = dataTypeService.GetDataTypeDefinitionById(leBlenderProperty.DataTypeGuid);
-                if (dataType == null) {
-                    // If the data type referenced by this LeBlender Property is missing on this machine
-                    // we'll get a very cryptic error when it attempts to create the pseudo property data item below.
-                    // Throw a meaningful error message instead
-                    throw new ArgumentNullException(string.Format("Unable to find the data type for editor '{0}' ({1} {2}) referenced by '{3}'.", leBlenderProperty.EditorName, leBlenderProperty.EditorAlias, leBlenderProperty.DataTypeGuid, item.Name));
-                    // Should we log a warning and continue instead?
-                }
+            // Often there is only one entry in cell.Value, but with LeBlender 
+            // min/max you can easily get 2+ entries so we'll walk them all
+            var newItemValue = new JArray();
+            foreach (var properties in cell.Value) {
+                // create object to store resolved properties
+                var resolvedProperties = new JObject();
 
-                // create a pseudo item for sending through resolvers
-                var pseudoPropertyDataItem = new ContentPropertyData
-                {
-                    ItemId = item.ItemId,
-                    Name = string.Format("{0}: (LeBlender PropertyAlias: {1}, DataTypeEditorAlias: {2})", item.Name, leBlenderProperty.EditorAlias, dataType.PropertyEditorAlias),
-                    Data = new List<ContentProperty>
-                    {
+                // loop through each of the property objects
+                foreach (dynamic leBlenderPropertyWrapper in properties) {
+                    // deserialize the value of the wrapper object into a LeBlenderProperty object
+                    var leBlenderPropertyJson = leBlenderPropertyWrapper.Value.ToString() as string;
+                    // continue if there's no data stored
+                    if (String.IsNullOrEmpty(leBlenderPropertyJson)) continue;
+
+                    var leBlenderProperty = JsonConvert.DeserializeObject<LeBlenderProperty>(leBlenderPropertyJson);
+
+                    // get the DataType of the property
+                    var dataType = dataTypeService.GetDataTypeDefinitionById(leBlenderProperty.DataTypeGuid);
+                    if (dataType == null) {
+                        // If the data type referenced by this LeBlender Property is missing on this machine
+                        // we'll get a very cryptic error when it attempts to create the pseudo property data item below.
+                        // Throw a meaningful error message instead
+                        throw new ArgumentNullException(string.Format("Unable to find the data type for editor '{0}' ({1} {2}) referenced by '{3}'.", leBlenderProperty.EditorName, leBlenderProperty.EditorAlias, leBlenderProperty.DataTypeGuid, item.Name));
+                        // Should we log a warning and continue instead?
+                    }
+
+                    // create a pseudo item for sending through resolvers
+                    var pseudoPropertyDataItem = new ContentPropertyData {
+                        ItemId = item.ItemId,
+                        Name = string.Format("{0}: (LeBlender PropertyAlias: {1}, DataTypeEditorAlias: {2})", item.Name, leBlenderProperty.EditorAlias, dataType.PropertyEditorAlias),
+                        Data = new List<ContentProperty>
+                        {
                         new ContentProperty
                         {
                             Alias = propertyData.Alias,
@@ -81,29 +74,28 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                             Value = leBlenderProperty.Value
                         }
                     }
-                };
-                if (action == Action.Packaging)
-                {
-                    // run the resolvers (convert Ids/integers into UniqueIds/guids)
-                    ResolutionManager.Instance.PackagingItem(pseudoPropertyDataItem, propertyDataItemProvider);
-                    // add in this editor's dependencies when packaging
-                    item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
-                    item.Resources.AddRange(pseudoPropertyDataItem.Resources);
-                    // and include this editor's data type as a dependency too
-                    item.Dependencies.Add(leBlenderProperty.DataTypeGuid.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
+                    };
+                    if (action == Action.Packaging) {
+                        // run the resolvers (convert Ids/integers into UniqueIds/guids)
+                        ResolutionManager.Instance.PackagingItem(pseudoPropertyDataItem, propertyDataItemProvider);
+                        // add in this editor's dependencies when packaging
+                        item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
+                        item.Resources.AddRange(pseudoPropertyDataItem.Resources);
+                        // and include this editor's data type as a dependency too
+                        item.Dependencies.Add(leBlenderProperty.DataTypeGuid.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
+                    } else {
+                        // run the resolvers (convert UniqueIds/guids back to Ids/integers)
+                        ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
+                    }
+                    // replace the property value with the resolved value
+                    leBlenderProperty.Value = pseudoPropertyDataItem.Data.First().Value;
+                    // add the resolved property to the resolved properties object
+                    resolvedProperties.Add(leBlenderProperty.EditorAlias, JObject.FromObject(leBlenderProperty));
                 }
-                else
-                {
-                    // run the resolvers (convert UniqueIds/guids back to Ids/integers)
-                    ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
-                }
-                // replace the property value with the resolved value
-                leBlenderProperty.Value = pseudoPropertyDataItem.Data.First().Value;
-                // add the resolved property to the resolved properties object
-                resolvedProperties.Add(leBlenderProperty.EditorAlias, JObject.FromObject(leBlenderProperty));
+                newItemValue.Add(resolvedProperties);
             }
-            // replace the cell value with all the resolved values - wrap in a JToken+JArray to get it stored like LeBlender does
-            cell.Value = JToken.FromObject(new JArray(resolvedProperties));
+            // replace the cell value with all the resolved values
+            cell.Value = JToken.FromObject(newItemValue);
         }
 
         public class LeBlenderProperty {
