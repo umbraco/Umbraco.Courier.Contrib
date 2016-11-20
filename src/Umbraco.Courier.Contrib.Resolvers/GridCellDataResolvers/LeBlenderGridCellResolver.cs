@@ -79,9 +79,11 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 {
                     // run the resolvers (convert Ids/integers into UniqueIds/guids)
                     ResolutionManager.Instance.PackagingItem(pseudoPropertyDataItem, propertyDataItemProvider);
-                    // add in dependencies when packaging
+                    // add in this editor's dependencies when packaging
                     item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
                     item.Resources.AddRange(pseudoPropertyDataItem.Resources);
+                    // and include this editor's data type as a dependency too
+                    item.Dependencies.Add(leBlenderProperty.DataTypeGuid.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
                 }
                 else
                 {
