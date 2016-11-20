@@ -58,6 +58,13 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 
                 // get the DataType of the property
                 var dataType = dataTypeService.GetDataTypeDefinitionById(leBlenderProperty.DataTypeGuid);
+                if (dataType == null) {
+                    // If the data type referenced by this LeBlender Property is missing on this machine
+                    // we'll get a very cryptic error when it attempts to create the pseudo property data item below.
+                    // Throw a meaningful error message instead
+                    throw new ArgumentNullException(string.Format("Unable to find the data type for editor '{0}' ({1} {2}) referenced by '{3}'.", leBlenderProperty.EditorName, leBlenderProperty.EditorAlias, leBlenderProperty.DataTypeGuid, item.Name));
+                    // Should we log a warning and continue instead?
+                }
 
                 // create a pseudo item for sending through resolvers
                 var pseudoPropertyDataItem = new ContentPropertyData
