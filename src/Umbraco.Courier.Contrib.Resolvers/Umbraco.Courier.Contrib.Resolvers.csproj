@@ -288,6 +288,7 @@
     <Compile Include="Action.cs" />
     <Compile Include="GridCellDataResolvers\DocTypeGridEditorGridCellResolver.cs" />
     <Compile Include="GridCellDataResolvers\LeBlenderGridCellResolver.cs" />
+    <Compile Include="PropertyDataResolvers\ImulusUrlPickerPropertyDataResolver.cs" />
     <Compile Include="PropertyDataResolvers\NestedContentPropertyDataResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyDataResolvers\VortoPropertyDataResolver.cs" />
