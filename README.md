@@ -10,6 +10,7 @@ Primarily this project offers data-resolvers for the most popular Umbraco commun
 This project offers Umbraco Courier data-resolvers for the following community packages:
 
 - [DocType Grid Editor](https://our.umbraco.org/projects/backoffice-extensions/doc-type-grid-editor/)
+- [UrlPicker](https://our.umbraco.org/projects/backoffice-extensions/urlpicker/)
 - [LeBlender](https://our.umbraco.org/projects/backoffice-extensions/leblender)
 - [Nested Content](https://our.umbraco.org/projects/backoffice-extensions/nested-content/)
 - [Vorto](https://our.umbraco.org/projects/backoffice-extensions/vorto)
