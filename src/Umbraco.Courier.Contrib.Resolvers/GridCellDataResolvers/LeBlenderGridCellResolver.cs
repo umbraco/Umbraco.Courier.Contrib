@@ -113,7 +113,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
             cell.Value = JToken.FromObject(newItemValue);
         }
 
-        public class LeBlenderProperty
+        internal class LeBlenderProperty
         {
             private bool _isQuoted;
             private JRaw _jrawValue;
