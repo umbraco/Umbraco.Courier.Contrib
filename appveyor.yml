@@ -1,5 +1,5 @@
 # version format
-version: 1.0.0.{build}
+version: 1.0.{build}
 
 # Do not build on tags
 skip_tags: true
@@ -7,7 +7,7 @@ skip_tags: true
 
 build_script:
   - cd Build
-  - Package.build.cmd
+  - Package.build.cmd %APPVEYOR_BUILD_VERSION%
 
 artifacts:
   - path: Releases\*.nupkg

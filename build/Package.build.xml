@@ -16,7 +16,7 @@
 		<PackageName>Umbraco Courier Contrib</PackageName>
 		<MinUmbracoVersion>7.0.0</MinUmbracoVersion>
 		<Readme>This project contains community contributions for the Umbraco deployment tool, Courier. Primarily this project offers data-resolvers for the most popular Umbraco community packages - these are used by Courier (and Umbraco Cloud) to aid with the deployment and transferring of content/property-data to a target environment.</Readme>
-		<AuthorName>Claus Jensen</AuthorName>
+		<AuthorName>Umbraco</AuthorName>
 		<AuthorUrl>https://umbraco.com/</AuthorUrl>
 		<PackageLicenseName>MIT license</PackageLicenseName>
 		<PackageLicenseUrl>http://www.opensource.org/licenses/mit-license.php</PackageLicenseUrl>
@@ -27,8 +27,8 @@
 	<PropertyGroup>
 		<NugetPackageName>Umbraco Courier Contrib</NugetPackageName>
 		<PackageId>Umbraco.Courier.Contrib</PackageId>
-		<Copyright>Claus Jensen</Copyright>
-		<Owners>Claus Jensen</Owners>
+		<Copyright>Umbraco</Copyright>
+		<Owners>Umbraco</Owners>
 		<Summary>This project contains community contributions for the Umbraco deployment tool, Courier. Primarily this project offers data-resolvers for the most popular Umbraco community packages - these are used by Courier (and Umbraco Cloud) to aid with the deployment and transferring of content/property-data to a target environment.</Summary>
 		<IconUrl>https://raw.githubusercontent.com/umbraco/Umbraco.Courier.Contrib/master/logo.png</IconUrl>
 		<Tags>umbraco</Tags>
@@ -38,9 +38,6 @@
   
 
 	<PropertyGroup>
-		<VersionMajor>1</VersionMajor>
-		<VersionMinor>0</VersionMinor>
-		<VersionPatch>0</VersionPatch>
 		<VersionSuffix></VersionSuffix>
 		<UmbracoVersion>7.0.0</UmbracoVersion>
 	</PropertyGroup>
@@ -64,16 +61,11 @@
 	</Target>
 
 	<!-- UPDATE ASSEMBLEY VERSION -->
+	
 	<Target Name="UpdateAssemblyInfo" DependsOnTargets="Clean">
-		<Version Major="$(VersionMajor)" Minor="$(VersionMinor)" BuildType="Automatic" RevisionType="Automatic" StartDate="08/03/2013">
-			<Output TaskParameter="Build" PropertyName="Build" />
-			<Output TaskParameter="Revision" PropertyName="Revision" />
-		</Version>
 		<AssemblyInfo CodeLanguage="CS"
 			OutputFile="$(CoreProjectDir)\Properties\VersionInfo.cs"
-			AssemblyVersion="$(VersionMajor).$(VersionMinor).$(VersionPatch)"
-			AssemblyFileVersion="$(VersionMajor).$(VersionMinor).$(Build).$(Revision)"
-			AssemblyInformationalVersion="$(VersionMajor).$(VersionMinor).$(VersionPatch)$(VersionSuffix)"/>
+			AssemblyVersion="$(ProductVersion).*" />
 	</Target>
 
 	<!-- COMPILE -->
@@ -100,7 +92,7 @@
 	
 	
     <Copy SourceFiles="@(BinFiles)"
-    DestinationFiles="@(BinFiles->'$(BuildNuGetDir)\lib\%(RecursiveDir)%(Filename)%(Extension)')" />
+    DestinationFiles="@(BinFiles->'$(BuildNuGetDir)\lib\net45\%(RecursiveDir)%(Filename)%(Extension)')" />
 	
 	
 	 
@@ -120,7 +112,7 @@
 			Title="$(NugetPackageName)"
 			Description="$(Readme)"
 			Summary="$(Summary)"
-			Version="$(VersionMajor).$(VersionMinor).$(VersionPatch)$(VersionSuffix)"
+			Version="$(ProductVersion)"
 			MinimumRequiredUmbracoVersion ="$(MinUmbracoVersion)"
 			Authors="$(AuthorName)"
 			Owners="$(Owners)"
