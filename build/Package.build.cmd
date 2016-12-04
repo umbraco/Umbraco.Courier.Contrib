@@ -23,20 +23,9 @@ IF NOT EXIST %nuGetExecutable% (
 )
 
 ECHO Restore NuGet packages
-%nuGetExecutable% restore ..\src\Umbraco.Courier.Contrib.sln
+%nuGetExecutable% restore ..\src\Umbraco.Courier.Contrib.sln -Verbosity quiet
 
-SET msbuild = %windir%\Microsoft.NET\Framework\v4.0.30319\msbuild.exe
-
-IF EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe" (
-	SET msbuild="%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe"
-)	
-IF EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe" (
-	SET msbuild="%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
-)	
-IF EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe" (
-	SET msbuild="%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
-)
+SET msbuild=%windir%\Microsoft.NET\Framework\v4.0.30319\msbuild.exe
 
 ECHO Build the library and produce NuGet package
-
 %msbuild% Package.build.xml /p:ProductVersion=%version%
