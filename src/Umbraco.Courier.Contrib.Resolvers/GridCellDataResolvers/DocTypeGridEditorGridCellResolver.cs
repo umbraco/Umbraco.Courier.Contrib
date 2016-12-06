@@ -58,91 +58,96 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 return;
 
             var propertyValues = ((JObject)cellValue).ToObject<Dictionary<string, object>>();
-
-            if (direction == Action.Packaging)
+            
+            //this editor can contain references to doctypes that no longer exist
+            //then it would be pointless to iterate over properties, they can't be set anyway
+            if (documentType != null)
             {
-                item.Dependencies.Add(documentType.UniqueId.ToString(), ItemProviderIds.documentTypeItemProviderGuid);
-            }
-
-            // get the ItemProvider for the ResolutionManager
-            var propertyDataItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
-
-            var properties = documentType.Properties;
-
-            // check for compositions
-            foreach (var masterDocumentTypeAlias in documentType.MasterDocumentTypes)
-            {
-                var masterDocumentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterDocumentTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
-                if (masterDocumentType != null)
-                    properties.AddRange(masterDocumentType.Properties);
-            }
-
-            foreach (var property in properties)
-            {
-                object value = null;
-                if (!propertyValues.TryGetValue(property.Alias, out value) || value == null)
-                    continue;
-
-                var datatype = ExecutionContext.DatabasePersistence.RetrieveItem<DataType>(new ItemIdentifier(property.DataTypeDefinitionId.ToString(), ItemProviderIds.dataTypeItemProviderGuid));
-
-                // create a pseudo item for sending through resolvers
-                var pseudoPropertyDataItem = new ContentPropertyData
-                {
-                    ItemId = item.ItemId,
-                    Name = string.Format("{0} [{1}: Nested {2} ({3})]", item.Name, EditorAlias, datatype.PropertyEditorAlias, property.Alias),
-                    Data = new List<ContentProperty>
-                    {
-                        new ContentProperty
-                        {
-                            Alias = property.Alias,
-                            DataType = datatype.UniqueID,
-                            PropertyEditorAlias = datatype.PropertyEditorAlias,
-                            Value = value
-                        }
-                    }
-                };
-
                 if (direction == Action.Packaging)
                 {
-                    try
-                    {
-                        // run the resolvers (convert Ids/integers into UniqueIds/guids)
-                        ResolutionManager.Instance.PackagingItem(pseudoPropertyDataItem, propertyDataItemProvider);
-                    }
-                    catch (Exception ex)
-                    {
-                        CourierLogHelper.Error<DocTypeGridEditorGridCellResolver>(string.Concat("Error packaging data value: ", pseudoPropertyDataItem.Name), ex);
-                    }
-                    // add in dependencies when packaging
-                    item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
-                    item.Resources.AddRange(pseudoPropertyDataItem.Resources);
+                    item.Dependencies.Add(documentType.UniqueId.ToString(), ItemProviderIds.documentTypeItemProviderGuid);
                 }
-                else if (direction == Action.Extracting)
-                {
-                    try
-                    {
-                        // run the resolvers (convert UniqueIds/guids back to Ids/integers)
-                        ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
-                    }
-                    catch (Exception ex)
-                    {
-                        CourierLogHelper.Error<DocTypeGridEditorGridCellResolver>(
-                            string.Concat("Error extracting data value: ", pseudoPropertyDataItem.Name), ex);
-                    }
-                }
-                
-                if (pseudoPropertyDataItem.Data != null && pseudoPropertyDataItem.Data.Any())
-                {
-                    // get the first (and only) property of the pseudo item created above
-                    var firstProperty = pseudoPropertyDataItem.Data.FirstOrDefault();
-                    if (firstProperty != null)
-                    {
-                        // replace the property value with the resolved value
-                        propertyValues[property.Alias] = firstProperty.Value;
 
-                        // (if packaging) add a dependency for the property's data-type
-                        if (direction == Action.Packaging)
-                            item.Dependencies.Add(firstProperty.DataType.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
+                // get the ItemProvider for the ResolutionManager
+                var propertyDataItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
+
+                var properties = documentType.Properties;
+
+                // check for compositions
+                foreach (var masterDocumentTypeAlias in documentType.MasterDocumentTypes)
+                {
+                    var masterDocumentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterDocumentTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+                    if (masterDocumentType != null)
+                        properties.AddRange(masterDocumentType.Properties);
+                }
+
+                foreach (var property in properties)
+                {
+                    object value = null;
+                    if (!propertyValues.TryGetValue(property.Alias, out value) || value == null)
+                        continue;
+
+                    var datatype = ExecutionContext.DatabasePersistence.RetrieveItem<DataType>(new ItemIdentifier(property.DataTypeDefinitionId.ToString(), ItemProviderIds.dataTypeItemProviderGuid));
+
+                    // create a pseudo item for sending through resolvers
+                    var pseudoPropertyDataItem = new ContentPropertyData
+                    {
+                        ItemId = item.ItemId,
+                        Name = string.Format("{0} [{1}: Nested {2} ({3})]", item.Name, EditorAlias, datatype.PropertyEditorAlias, property.Alias),
+                        Data = new List<ContentProperty>
+                        {
+                            new ContentProperty
+                            {
+                                Alias = property.Alias,
+                                DataType = datatype.UniqueID,
+                                PropertyEditorAlias = datatype.PropertyEditorAlias,
+                                Value = value
+                            }
+                        }
+                    };
+
+                    if (direction == Action.Packaging)
+                    {
+                        try
+                        {
+                            // run the resolvers (convert Ids/integers into UniqueIds/guids)
+                            ResolutionManager.Instance.PackagingItem(pseudoPropertyDataItem, propertyDataItemProvider);
+                        }
+                        catch (Exception ex)
+                        {
+                            CourierLogHelper.Error<DocTypeGridEditorGridCellResolver>(string.Concat("Error packaging data value: ", pseudoPropertyDataItem.Name), ex);
+                        }
+                        // add in dependencies when packaging
+                        item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
+                        item.Resources.AddRange(pseudoPropertyDataItem.Resources);
+                    }
+                    else if (direction == Action.Extracting)
+                    {
+                        try
+                        {
+                            // run the resolvers (convert UniqueIds/guids back to Ids/integers)
+                            ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
+                        }
+                        catch (Exception ex)
+                        {
+                            CourierLogHelper.Error<DocTypeGridEditorGridCellResolver>(
+                                string.Concat("Error extracting data value: ", pseudoPropertyDataItem.Name), ex);
+                        }
+                    }
+
+                    if (pseudoPropertyDataItem.Data != null && pseudoPropertyDataItem.Data.Any())
+                    {
+                        // get the first (and only) property of the pseudo item created above
+                        var firstProperty = pseudoPropertyDataItem.Data.FirstOrDefault();
+                        if (firstProperty != null)
+                        {
+                            // replace the property value with the resolved value
+                            propertyValues[property.Alias] = firstProperty.Value;
+
+                            // (if packaging) add a dependency for the property's data-type
+                            if (direction == Action.Packaging)
+                                item.Dependencies.Add(firstProperty.DataType.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
+                        }
                     }
                 }
             }
@@ -165,7 +170,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 else
                 {
                     jsonString.Append("\"");
-                    jsonString.Append(val.Value);
+                    jsonString.Append(val.Value.ToString().EscapeForJson());
                     jsonString.Append("\"");
                 }
 
@@ -179,6 +184,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
 
             var tempCellValue = JToken.Parse(jsonString.ToString());
             cell.Value["value"] = tempCellValue;
+
         }
     }
 }
