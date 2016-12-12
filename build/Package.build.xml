@@ -18,8 +18,8 @@
 		<Readme>This project contains community contributions for the Umbraco deployment tool, Courier. Primarily this project offers data-resolvers for the most popular Umbraco community packages - these are used by Courier (and Umbraco Cloud) to aid with the deployment and transferring of content/property-data to a target environment.</Readme>
 		<AuthorName>Umbraco</AuthorName>
 		<AuthorUrl>https://umbraco.com/</AuthorUrl>
-		<PackageLicenseName>MIT license</PackageLicenseName>
-		<PackageLicenseUrl>http://www.opensource.org/licenses/mit-license.php</PackageLicenseUrl>
+		<PackageLicenseName>MIT License</PackageLicenseName>
+		<PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
 		<ProjectUrl>https://umbraco.com/</ProjectUrl>
 	</PropertyGroup>
 
