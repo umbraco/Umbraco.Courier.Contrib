@@ -30,7 +30,7 @@
 		<Copyright>Umbraco</Copyright>
 		<Owners>Umbraco</Owners>
 		<Summary>This project contains community contributions for the Umbraco deployment tool, Courier. Primarily this project offers data-resolvers for the most popular Umbraco community packages - these are used by Courier (and Umbraco Cloud) to aid with the deployment and transferring of content/property-data to a target environment.</Summary>
-		<IconUrl>https://raw.githubusercontent.com/umbraco/Umbraco.Courier.Contrib/master/logo.png</IconUrl>
+		<IconUrl>http://umbraco.com/media/357769/100px_transparent.png</IconUrl>
 		<Tags>umbraco</Tags>
 		<Language>en-GB</Language>
 		<RequireLicenseAcceptance>false</RequireLicenseAcceptance>
