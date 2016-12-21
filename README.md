@@ -1,3 +1,6 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/bfotoy95lmos15b2/branch/master?svg=true)](https://ci.appveyor.com/project/Umbraco/umbraco-courier-contrib/branch/master)
+[![NuGet release](https://img.shields.io/nuget/v/Umbraco.Courier.Contrib.svg)](https://www.nuget.org/packages/Umbraco.Courier.Contrib)
+
 # Umbraco Courier Contrib
 
 This project contains community contributions for the Umbraco deployment tool, Courier.
@@ -22,9 +25,8 @@ This project offers Umbraco Courier data-resolvers for the following community p
 
 ### Installation
 
-> *Note:* Currently this project can only be built manually. You will need Visual Studio 2015 (or above) to do so.
-> An Umbraco and/or NuGet package will be offered in due course.
-
+You can install the NuGet package using `Install-Package Umbraco.Courier.Contrib`.  
+[![NuGet release](https://img.shields.io/nuget/v/Umbraco.Courier.Contrib.svg)](https://www.nuget.org/packages/Umbraco.Courier.Contrib)
 
 ---
 
