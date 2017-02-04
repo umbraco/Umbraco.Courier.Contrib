@@ -149,7 +149,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 set
                 {
                     string str = value as string;
-                    if (str != null && _isQuoted)
+                    if (str != null && (_isQuoted || str == "¤"))
                     {
                         // We stripped quotes off so put them back now
                         JRawValue = new JRaw("\"" + str + "\"");
