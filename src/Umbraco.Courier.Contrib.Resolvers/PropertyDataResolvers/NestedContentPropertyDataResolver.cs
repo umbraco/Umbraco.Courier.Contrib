@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -100,100 +100,103 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
             var propertyDataItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
 
             // loop through all the Nested Content items
-            foreach (var nestedContentItem in nestedContentItems)
+            if (nestedContentItems != null && nestedContentItems.Any())
             {
-                // get the document type for the item, if it can't be found, skip to the next item
-                var documentTypeAlias = nestedContentItem["ncContentTypeAlias"];
-                if (documentTypeAlias == null)
-                    continue;
-                var documentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(documentTypeAlias.ToString(), ItemProviderIds.documentTypeItemProviderGuid));
-                if (documentType == null)
-                    continue;
-
-                // get the properties available on the document type
-                var properties = documentType.Properties;
-
-                // add in properties from all composition document types, as these are not located on the document type itself
-                foreach (var masterDocumentTypeAlias in documentType.MasterDocumentTypes)
+                foreach (var nestedContentItem in nestedContentItems)
                 {
-                    var masterDocumentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterDocumentTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
-                    if (masterDocumentType != null)
-                        properties.AddRange(masterDocumentType.Properties);
-                }
+                    // get the document type for the item, if it can't be found, skip to the next item
+                    var documentTypeAlias = nestedContentItem["ncContentTypeAlias"];
+                    if (documentTypeAlias == null)
+                        continue;
+                    var documentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(documentTypeAlias.ToString(), ItemProviderIds.documentTypeItemProviderGuid));
+                    if (documentType == null)
+                        continue;
 
-                // run through all properties, creating pseudo items and sending them through the resolvers
-                foreach (var property in properties)
-                {
-                    var value = nestedContentItem[property.Alias];
-                    if (value != null)
+                    // get the properties available on the document type
+                    var properties = documentType.Properties;
+
+                    // add in properties from all composition document types, as these are not located on the document type itself
+                    foreach (var masterDocumentTypeAlias in documentType.MasterDocumentTypes)
                     {
-                        var dataType = ExecutionContext.DatabasePersistence.RetrieveItem<DataType>(new ItemIdentifier(property.DataTypeDefinitionId.ToString(), ItemProviderIds.dataTypeItemProviderGuid));
+                        var masterDocumentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterDocumentTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+                        if (masterDocumentType != null)
+                            properties.AddRange(masterDocumentType.Properties);
+                    }
 
-                        var pseudoPropertyDataItem = new ContentPropertyData
+                    // run through all properties, creating pseudo items and sending them through the resolvers
+                    foreach (var property in properties)
+                    {
+                        var value = nestedContentItem[property.Alias];
+                        if (value != null)
                         {
-                            ItemId = item.ItemId,
-                            Name = string.Format("{0} [{1}: Nested {2} ({3})]", item.Name, propertyData.PropertyEditorAlias, dataType.PropertyEditorAlias, property.Alias),
-                            Data = new List<ContentProperty>
+                            var dataType = ExecutionContext.DatabasePersistence.RetrieveItem<DataType>(new ItemIdentifier(property.DataTypeDefinitionId.ToString(), ItemProviderIds.dataTypeItemProviderGuid));
+
+                            var pseudoPropertyDataItem = new ContentPropertyData
                             {
-                                new ContentProperty
+                                ItemId = item.ItemId,
+                                Name = string.Format("{0} [{1}: Nested {2} ({3})]", item.Name, propertyData.PropertyEditorAlias, dataType.PropertyEditorAlias, property.Alias),
+                                Data = new List<ContentProperty>
                                 {
-                                    Alias = property.Alias,
-                                    DataType = dataType.UniqueID,
-                                    PropertyEditorAlias = dataType.PropertyEditorAlias,
-                                    Value = value.ToString()
+                                    new ContentProperty
+                                    {
+                                        Alias = property.Alias,
+                                        DataType = dataType.UniqueID,
+                                        PropertyEditorAlias = dataType.PropertyEditorAlias,
+                                        Value = value.ToString()
+                                    }
+                                }
+                            };
+                            if (action == Action.Packaging)
+                            {
+                                try
+                                {
+                                    // run the resolvers (convert Ids/integers into UniqueIds/guids)
+                                    ResolutionManager.Instance.PackagingItem(pseudoPropertyDataItem, propertyDataItemProvider);
+                                }
+                                catch (Exception ex)
+                                {
+                                    CourierLogHelper.Error<NestedContentPropertyDataResolver>(string.Concat("Error packaging data value: ", pseudoPropertyDataItem.Name), ex);
+                                }
+                                // add in dependencies when packaging
+                                item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
+                                item.Resources.AddRange(pseudoPropertyDataItem.Resources);
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    // run the resolvers (convert UniqueIds/guids back to Ids/integers)
+                                    ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
+                                }
+                                catch (Exception ex)
+                                {
+                                    CourierLogHelper.Error<NestedContentPropertyDataResolver>(string.Concat("Error extracting data value: ", pseudoPropertyDataItem.Name), ex);
                                 }
                             }
-                        };
-                        if (action == Action.Packaging)
-                        {
-                            try
-                            {
-                                // run the resolvers (convert Ids/integers into UniqueIds/guids)
-                                ResolutionManager.Instance.PackagingItem(pseudoPropertyDataItem, propertyDataItemProvider);
-                            }
-                            catch (Exception ex)
-                            {
-                                CourierLogHelper.Error<NestedContentPropertyDataResolver>(string.Concat("Error packaging data value: ", pseudoPropertyDataItem.Name), ex);
-                            }
-                            // add in dependencies when packaging
-                            item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
-                            item.Resources.AddRange(pseudoPropertyDataItem.Resources);
-                        }
-                        else
-                        {
-                            try
-                            {
-                                // run the resolvers (convert UniqueIds/guids back to Ids/integers)
-                                ResolutionManager.Instance.ExtractingItem(pseudoPropertyDataItem, propertyDataItemProvider);
-                            }
-                            catch (Exception ex)
-                            {
-                                CourierLogHelper.Error<NestedContentPropertyDataResolver>(string.Concat("Error extracting data value: ", pseudoPropertyDataItem.Name), ex);
-                            }
-                        }
 
-                        if (pseudoPropertyDataItem.Data != null && pseudoPropertyDataItem.Data.Any())
-                        {
-                            // get the first (and only) property of the pseudo item created above
-                            var firstProperty = pseudoPropertyDataItem.Data.FirstOrDefault();
-                            if (firstProperty != null)
+                            if (pseudoPropertyDataItem.Data != null && pseudoPropertyDataItem.Data.Any())
                             {
-                                // serialize the value of the property
-                                var serializedValue = firstProperty.Value as string ?? JsonConvert.SerializeObject(firstProperty.Value);
+                                // get the first (and only) property of the pseudo item created above
+                                var firstProperty = pseudoPropertyDataItem.Data.FirstOrDefault();
+                                if (firstProperty != null)
+                                {
+                                    // serialize the value of the property
+                                    var serializedValue = firstProperty.Value as string ?? JsonConvert.SerializeObject(firstProperty.Value);
 
-                                // replace the values on the Nested Content item property with the resolved values
-                                nestedContentItem[property.Alias] = new JValue(serializedValue);
+                                    // replace the values on the Nested Content item property with the resolved values
+                                    nestedContentItem[property.Alias] = new JValue(serializedValue);
 
-                                // if packaging - add a dependency for the property's data-type
-                                if (action == Action.Packaging)
-                                    item.Dependencies.Add(firstProperty.DataType.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
+                                    // if packaging - add a dependency for the property's data-type
+                                    if (action == Action.Packaging)
+                                        item.Dependencies.Add(firstProperty.DataType.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
+                                }
                             }
                         }
                     }
                 }
+                // serialize the whole vorto property back to json and save the value on the property data
+                propertyData.Value = JsonConvert.SerializeObject(nestedContentItems);
             }
-            // serialize the whole vorto property back to json and save the value on the property data
-            propertyData.Value = JsonConvert.SerializeObject(nestedContentItems);
         }
     }
 }
