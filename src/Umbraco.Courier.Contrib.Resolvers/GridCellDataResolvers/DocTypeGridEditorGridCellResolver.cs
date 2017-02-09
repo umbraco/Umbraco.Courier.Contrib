@@ -156,39 +156,14 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 }
             }
 
-            // build up json as a string first, as directly converting 
-            // propValues to a JToken causes json objects to be converted into a string
-            // (such as nested content inside a doctypegrid)
-            var jsonString = new StringBuilder("{");
+            //Iterate property values and construct a JObject so
+            //the json isn't converted into a string.
+            var resolvedValues = new JObject();
             foreach (var val in propertyValues)
             {
-                jsonString.Append("\"");
-                jsonString.Append(val.Key);
-                jsonString.Append("\":");
-
-                // check if it's a json object and not just a string
-                if (val.Value.ToString().Trim().StartsWith("["))
-                {
-                    jsonString.Append(val.Value);
-                }
-                else
-                {
-                    jsonString.Append("\"");
-                    jsonString.Append(val.Value.ToString().EscapeForJson());
-                    jsonString.Append("\"");
-                }
-
-                jsonString.Append(",");
+                resolvedValues.Add(new JProperty(val.Key, val.Value));
             }
-            if (jsonString.Length > 1)
-            {
-                jsonString.Remove(jsonString.Length - 1, 1);
-            }
-            jsonString.Append("}");
-
-            var tempCellValue = JToken.Parse(jsonString.ToString());
-            cell.Value["value"] = tempCellValue;
-
+            cell.Value["value"] = resolvedValues;
         }
     }
 }
