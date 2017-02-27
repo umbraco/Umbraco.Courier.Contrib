@@ -59,6 +59,7 @@ Special thanks to the following community members for providing the initial data
 * [Umbrella](https://github.com/UmbrellaInc) and [Lee Kelleher](https://github.com/leekelleher)
 * [DIS/PLAY](https://github.com/display), [Rasmus Pedersen](https://github.com/rasmusjp) and [Kasper Kristensen](https://github.com/kasperhhk)
 * [Matt Brailsford](https://github.com/mattbrailsford)
+* [Heather Floyd](https://github.com/hfloyd), [Matt Morrison](https://github.com/mattmorrisonsolidstudios)
 
 
 ## License
