@@ -26,6 +26,9 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 if (cell.Value is JValue)
                     return false;
 
+                if (cell.Value.Type == JTokenType.Array)
+                    return false;
+
                 return cell.Value["dtgeContentTypeAlias"] != null && cell.Value["value"] != null;
             }
             catch (Exception ex)
