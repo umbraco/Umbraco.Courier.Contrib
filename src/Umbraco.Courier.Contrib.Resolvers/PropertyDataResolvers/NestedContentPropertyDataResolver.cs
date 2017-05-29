@@ -77,6 +77,30 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
             }
         }
 
+        private DocumentType GetDocumentType(string docTypeAlias, IDictionary<string, DocumentType> cache)
+        {
+            DocumentType documentType;
+            //don't look it up if we already have done that
+            if (cache.TryGetValue(docTypeAlias, out documentType) == false)
+            {
+                documentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(docTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+                cache[docTypeAlias] = documentType;                
+            }
+            return documentType;
+        }
+
+        private DataType GetDataType(string docTypeAlias, IDictionary<string, DataType> cache)
+        {
+            DataType dataType;
+            //don't look it up if we already have done that
+            if (cache.TryGetValue(docTypeAlias, out dataType) == false)
+            {
+                dataType = ExecutionContext.DatabasePersistence.RetrieveItem<DataType>(new ItemIdentifier(docTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+                cache[docTypeAlias] = dataType;
+            }
+            return dataType;
+        }
+
         /// <summary>
         /// Processes the property data.
         /// This method is used both for packaging and extracting property data.
@@ -100,8 +124,11 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
             var propertyDataItemProvider = ItemProviderCollection.Instance.GetProvider(ItemProviderIds.propertyDataItemProviderGuid, ExecutionContext);
 
             // loop through all the Nested Content items
-            if (nestedContentItems != null && nestedContentItems.Any())
+            if (nestedContentItems != null)
             {
+                var resolvedDocTypes = new Dictionary<string, DocumentType>();
+                var resolvedDataTypes = new Dictionary<string, DataType>();
+
                 var items = new List<Dictionary<string, object>>();
 
                 foreach (var nestedContentItem in nestedContentItems)
@@ -110,7 +137,9 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                     var documentTypeAlias = nestedContentItem["ncContentTypeAlias"];
                     if (documentTypeAlias == null)
                         continue;
-                    var documentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(documentTypeAlias.ToString(), ItemProviderIds.documentTypeItemProviderGuid));
+
+                    var documentTypeAliasString = documentTypeAlias.ToString();
+                    var documentType = GetDocumentType(documentTypeAliasString, resolvedDocTypes);
                     if (documentType == null)
                         continue;
 
@@ -120,7 +149,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                     // add in properties from all composition document types, as these are not located on the document type itself
                     foreach (var masterDocumentTypeAlias in documentType.MasterDocumentTypes)
                     {
-                        var masterDocumentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(masterDocumentTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
+                        var masterDocumentType = GetDocumentType(masterDocumentTypeAlias, resolvedDocTypes);
                         if (masterDocumentType != null)
                             properties.AddRange(masterDocumentType.Properties);
                     }
@@ -134,7 +163,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                         if (!propertyValues.TryGetValue(property.Alias, out value) || value == null)
                             continue;
 
-                        var dataType = ExecutionContext.DatabasePersistence.RetrieveItem<DataType>(new ItemIdentifier(property.DataTypeDefinitionId.ToString(), ItemProviderIds.dataTypeItemProviderGuid));
+                        var dataType = GetDataType(property.DataTypeDefinitionId.ToString(), resolvedDataTypes);
 
                         var pseudoPropertyDataItem = new ContentPropertyData
                         {
@@ -180,10 +209,10 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                             }
                         }
 
-                        if (pseudoPropertyDataItem.Data != null && pseudoPropertyDataItem.Data.Any())
+                        if (pseudoPropertyDataItem.Data != null && pseudoPropertyDataItem.Data.Count > 0)
                         {
                             // get the first (and only) property of the pseudo item created above
-                            var firstProperty = pseudoPropertyDataItem.Data.FirstOrDefault();
+                            var firstProperty = pseudoPropertyDataItem.Data.Count > 0 ? pseudoPropertyDataItem.Data[0] : null;
                             if (firstProperty != null)
                             {
                                 // get the resolved value
@@ -205,9 +234,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                                     item.Dependencies.Add(firstProperty.DataType.ToString(), ItemProviderIds.dataTypeItemProviderGuid);
                             }
                         }
-
                     }
-
                     items.Add(propertyValues);
                 }
 
