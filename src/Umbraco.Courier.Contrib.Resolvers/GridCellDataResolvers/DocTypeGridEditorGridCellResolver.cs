@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Umbraco.Courier.Core;
@@ -62,7 +61,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 return;
 
             var propertyValues = ((JObject)cellValue).ToObject<Dictionary<string, object>>();
-            
+
             //this editor can contain references to doctypes that no longer exist
             //then it would be pointless to iterate over properties, they can't be set anyway
             if (documentType != null)
@@ -121,6 +120,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                         {
                             CourierLogHelper.Error<DocTypeGridEditorGridCellResolver>(string.Concat("Error packaging data value: ", pseudoPropertyDataItem.Name), ex);
                         }
+
                         // add in dependencies when packaging
                         item.Dependencies.AddRange(pseudoPropertyDataItem.Dependencies);
                         item.Resources.AddRange(pseudoPropertyDataItem.Resources);
@@ -145,8 +145,19 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                         var firstProperty = pseudoPropertyDataItem.Data.FirstOrDefault();
                         if (firstProperty != null)
                         {
-                            // replace the property value with the resolved value
-                            propertyValues[property.Alias] = firstProperty.Value;
+                            // get the resolved value
+                            var resolvedValue = firstProperty.Value;
+
+                            if (direction == Action.Extracting && resolvedValue is string && resolvedValue.ToString().DetectIsJson())
+                            {
+                                // because the DTGE data must be a JSON object type, we'll want to deserialize any encoded strings
+                                propertyValues[property.Alias] = JsonConvert.DeserializeObject(resolvedValue.ToString());
+                            }
+                            else
+                            {
+                                // replace the property value with the resolved value
+                                propertyValues[property.Alias] = resolvedValue;
+                            }
 
                             // (if packaging) add a dependency for the property's data-type
                             if (direction == Action.Packaging)
@@ -156,14 +167,8 @@ namespace Umbraco.Courier.Contrib.Resolvers.GridCellDataResolvers
                 }
             }
 
-            //Iterate property values and construct a JObject so
-            //the json isn't converted into a string.
-            var resolvedValues = new JObject();
-            foreach (var val in propertyValues)
-            {
-                resolvedValues.Add(new JProperty(val.Key, val.Value));
-            }
-            cell.Value["value"] = resolvedValues;
+            // the value assigned back must be a JSON object type
+            cell.Value["value"] = JObject.FromObject(propertyValues);
         }
     }
 }
