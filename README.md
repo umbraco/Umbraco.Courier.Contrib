@@ -16,6 +16,7 @@ This project offers Umbraco Courier data-resolvers for the following community p
 - [UrlPicker](https://our.umbraco.org/projects/backoffice-extensions/urlpicker/)
 - [LeBlender](https://our.umbraco.org/projects/backoffice-extensions/leblender)
 - [Nested Content](https://our.umbraco.org/projects/backoffice-extensions/nested-content/)
+- [Stacked Content](https://github.com/umco/umbraco-stacked-content)
 - [Vorto](https://our.umbraco.org/projects/backoffice-extensions/vorto)
 
 
