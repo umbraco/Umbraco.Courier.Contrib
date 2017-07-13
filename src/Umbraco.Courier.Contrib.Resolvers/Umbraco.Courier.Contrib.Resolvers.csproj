@@ -296,6 +296,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyDataResolvers\InnerContentPropertyDataResolver.cs" />
     <Compile Include="PropertyDataResolvers\StackedContentPropertyDataResolver.cs" />
+    <Compile Include="PropertyDataResolvers\UmbracoNestedContentPropertyDataResolver.cs" />
     <Compile Include="PropertyDataResolvers\VortoPropertyDataResolver.cs" />
     <Compile Include="StringExtensions.cs" />
   </ItemGroup>
