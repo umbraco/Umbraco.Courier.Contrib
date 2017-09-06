@@ -96,7 +96,8 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                     //Check for the 'content' type
                     if (urlPickerProperty.Type.Equals("content", StringComparison.OrdinalIgnoreCase) &&
                         urlPickerProperty.TypeData.ContentId != null &&
-                        (urlPickerProperty.TypeData.ContentId is int || urlPickerProperty.TypeData.ContentId is Int64))
+                        (urlPickerProperty.TypeData.ContentId is int || urlPickerProperty.TypeData.ContentId is Int64)
+                        && int.Parse(urlPickerProperty.TypeData.ContentId.ToString()) != 0)
                     {
                         var identifier = Dependencies.ConvertIdentifier(urlPickerProperty.TypeData.ContentId.ToString(), IdentifierReplaceDirection.FromNodeIdToGuid, ExecutionContext);
                         //Add the referenced Content item as a dependency
@@ -114,7 +115,8 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                     //Check for the 'media' type
                     if (urlPickerProperty.Type.Equals("media", StringComparison.OrdinalIgnoreCase) &&
                         urlPickerProperty.TypeData.MediaId != null &&
-                        (urlPickerProperty.TypeData.MediaId is int || urlPickerProperty.TypeData.MediaId is Int64))
+                        (urlPickerProperty.TypeData.MediaId is int || urlPickerProperty.TypeData.MediaId is Int64)
+                        && int.Parse(urlPickerProperty.TypeData.MediaId.ToString()) != 0)
                     {
                         var identifier = Dependencies.ConvertIdentifier(urlPickerProperty.TypeData.MediaId.ToString(), IdentifierReplaceDirection.FromNodeIdToGuid, ExecutionContext);
                         //Add the referenced Content item as a dependency
