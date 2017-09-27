@@ -13,7 +13,7 @@ using Umbraco.Courier.ItemProviders;
 namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 {
     /// <summary>
-    /// Nested Content Property Data Resolver for Nested Content by Matt Brailsford & Lee Kelleher.
+    /// Nested Content Property Data Resolver for Nested Content (package) by Matt Brailsford & Lee Kelleher.
     /// </summary>
     public class NestedContentPropertyDataResolver : PropertyDataResolverProvider
     {

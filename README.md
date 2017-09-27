@@ -18,6 +18,7 @@ This project offers Umbraco Courier data-resolvers for the following community p
 - [Nested Content](https://our.umbraco.org/projects/backoffice-extensions/nested-content/)
 - [Stacked Content](https://github.com/umco/umbraco-stacked-content)
 - [Vorto](https://our.umbraco.org/projects/backoffice-extensions/vorto)
+- [Multi Url Picker](https://our.umbraco.org/projects/backoffice-extensions/multi-url-picker/)
 
 
 ---
