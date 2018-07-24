@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Umbraco.Core;
 using Umbraco.Courier.Core;
 using Umbraco.Courier.Core.Logging;
 using Umbraco.Courier.DataResolvers;
@@ -29,9 +30,9 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 
             foreach (var link in links)
             {
-                var isMedia = link["isMedia"] != null;
+                var isMedia = link["isMedia"] != null || link["udi"] != null && link["udi"].ToString().StartsWith("umb://media");
 
-                if (link["id"] != null)
+                if (link["id"] != null || link["udi"] != null)
                 {
                     var objectTypeId = isMedia
                         ? UmbracoNodeObjectTypeIds.Media
@@ -41,10 +42,23 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                         ? ItemProviderIds.mediaItemProviderGuid
                         : ItemProviderIds.documentItemProviderGuid;
 
-                    int linkId;
-                    var nodeGuid = int.TryParse(link["id"].ToString(), out linkId)
-                        ? ExecutionContext.DatabasePersistence.GetUniqueId(linkId, objectTypeId)
-                        : Guid.Empty;
+                    var nodeGuid = Guid.Empty;
+                    if (link["udi"] != null)
+                    {
+                        var guidString = isMedia
+                            ? link["udi"].ToString().TrimStart("umb://media/")
+                            : link["udi"].ToString().TrimStart("umb://document/");
+
+                        Guid.TryParse(guidString, out nodeGuid);
+                    }
+                    else if (link["id"] != null)
+                    {
+                        int linkIdTemp;
+                        if (int.TryParse(link["id"].ToString(), out linkIdTemp))
+                        {
+                            nodeGuid = ExecutionContext.DatabasePersistence.GetUniqueId(linkIdTemp, objectTypeId);
+                        }
+                    }
 
                     if (Guid.Empty.Equals(nodeGuid))
                         continue;
@@ -53,7 +67,11 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 
                     item.Dependencies.Add(guid, itemProviderId);
 
-                    link["id"] = guid;
+                    // only need to adjust this if it was an id converted to a guid. udis are already unique and match on both source and destination
+                    if (link["id"] != null)
+                    {
+                        link["id"] = guid;
+                    }
                 }
                 else if (isMedia && link["url"] != null)
                 {
@@ -83,10 +101,12 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                 {
                     foreach (var link in links)
                     {
+                        var isMedia = link["isMedia"] != null || link["udi"] != null && link["udi"].ToString().StartsWith("umb://media");
+
                         if (link["id"] == null)
                             continue;
 
-                        var nodeObjectType = link["isMedia"] != null
+                        var nodeObjectType = isMedia
                             ? UmbracoNodeObjectTypeIds.Media
                             : UmbracoNodeObjectTypeIds.Document;
 
