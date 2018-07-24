@@ -75,9 +75,8 @@
       <HintPath>..\packages\Examine.0.1.57.2941\lib\Examine.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="FluentNHibernate, Version=1.2.0.712, Culture=neutral, PublicKeyToken=8aa435e3cb308880, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\FluentNHibernate.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="FluentNHibernate, Version=1.4.0.0, Culture=neutral, PublicKeyToken=8aa435e3cb308880, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\FluentNHibernate.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
@@ -88,8 +87,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Iesi.Collections, Version=1.0.1.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Iesi.Collections.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Iesi.Collections.dll</HintPath>
     </Reference>
     <Reference Include="ImageProcessor, Version=1.9.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ImageProcessor.1.9.5.0\lib\ImageProcessor.dll</HintPath>
@@ -139,9 +137,8 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="NHibernate, Version=3.1.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\NHibernate.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="NHibernate, Version=3.4.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\NHibernate.dll</HintPath>
     </Reference>
     <Reference Include="NHibernate.ByteCode.Castle, Version=3.1.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <HintPath>..\packages\Courier.Core.2.52.15\lib\NHibernate.ByteCode.Castle.dll</HintPath>
@@ -217,37 +214,29 @@
       <HintPath>..\packages\UmbracoCms.Core.7.1.8\lib\Umbraco.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Umbraco.Courier.Core, Version=1.2.5210.19573, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Courier.Core.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Umbraco.Courier.Core, Version=1.3.170.11885, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Courier.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Umbraco.Courier.DataResolvers, Version=1.2.5210.19577, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Courier.DataResolvers.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Umbraco.Courier.DataResolvers, Version=1.3.170.11889, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Courier.DataResolvers.dll</HintPath>
     </Reference>
-    <Reference Include="Umbraco.Courier.EventHandlers.V7, Version=1.2.5210.19578, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Courier.EventHandlers.V7.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Umbraco.Courier.EventHandlers.V7, Version=1.3.170.11890, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Courier.EventHandlers.V7.dll</HintPath>
     </Reference>
-    <Reference Include="Umbraco.Courier.Persistence, Version=1.2.5210.19571, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Courier.Persistence.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Umbraco.Courier.Persistence, Version=1.3.170.11884, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Courier.Persistence.dll</HintPath>
     </Reference>
-    <Reference Include="Umbraco.Courier.Persistence.V7.NHibernate, Version=1.2.5210.19578, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Courier.Persistence.V7.NHibernate.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Umbraco.Courier.Persistence.V7.NHibernate, Version=1.3.170.11888, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Courier.Persistence.V7.NHibernate.dll</HintPath>
     </Reference>
-    <Reference Include="Umbraco.Courier.Providers, Version=1.2.5210.19574, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Courier.Providers.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Umbraco.Courier.Providers, Version=1.3.170.11886, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Courier.Providers.dll</HintPath>
     </Reference>
-    <Reference Include="Umbraco.Courier.RepositoryProviders, Version=1.2.5210.19575, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Courier.RepositoryProviders.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Umbraco.Courier.RepositoryProviders, Version=1.3.170.11887, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Courier.RepositoryProviders.dll</HintPath>
     </Reference>
-    <Reference Include="Umbraco.Courier.UI, Version=1.2.5210.19580, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Courier.UI.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Umbraco.Courier.UI, Version=1.3.170.11890, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Courier.UI.dll</HintPath>
     </Reference>
     <Reference Include="umbraco.DataLayer, Version=1.0.5394.16132, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\UmbracoCms.Core.7.1.8\lib\umbraco.DataLayer.dll</HintPath>
@@ -258,8 +247,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Umbraco.Licensing, Version=2.0.33.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Courier.Core.2.52.15\lib\Umbraco.Licensing.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\packages\Courier.Core.3.1.7\lib\Umbraco.Licensing.dll</HintPath>
     </Reference>
     <Reference Include="umbraco.MacroEngines, Version=1.0.5394.16139, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\UmbracoCms.Core.7.1.8\lib\umbraco.MacroEngines.dll</HintPath>
