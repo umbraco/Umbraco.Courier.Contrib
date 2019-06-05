@@ -31,7 +31,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
             }
             catch (Exception ex)
             {
-                CourierLogHelper.Error<MultiUrlPickerPropertyDataResolver>($"There was a problem deserializing RJP.MultiUrlPicker data: {propertyData.Value.ToString()}", ex);
+                CourierLogHelper.Error<MultiUrlPickerPropertyDataResolver>(String.Format("There was a problem deserializing RJP.MultiUrlPicker data: {0}", propertyData.Value.ToString()), ex);
             }
 
             if (links == null)
