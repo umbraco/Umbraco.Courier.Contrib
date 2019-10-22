@@ -48,7 +48,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 
         private void AddDataTypeDependencies(DataType item)
         {
-            if (item?.Prevalues == null || item.Prevalues.Count == 0)
+            if (item == null || item.Prevalues == null || item.Prevalues.Count == 0)
                 return;
 
             var json = item.Prevalues.FirstOrDefault(x => x.Alias.InvariantEquals("contentTypes"));
@@ -64,6 +64,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
             foreach (var contentType in contentTypes)
             {
                 DocumentType documentType = null;
+                Guid documentTypeGuid;
                 var documentTypeAlias = contentType["icContentTypeAlias"];
                 var documentTypeGuidString = contentType["icContentTypeGuid"];
                 if (documentTypeAlias != null)
@@ -71,7 +72,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                     var documentTypeAliasString = documentTypeAlias.ToString();
                     documentType = GetDocumentType(documentTypeAliasString, resolvedDocTypes);
                 }
-                else if (documentTypeGuidString != null && Guid.TryParse(documentTypeGuidString.ToString(), out var documentTypeGuid))
+                else if (documentTypeGuidString != null && Guid.TryParse(documentTypeGuidString.ToString(), out documentTypeGuid))
                 {
                     documentType = GetDocumentType(documentTypeGuid, resolvedDocTypes);
                 }
@@ -113,6 +114,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                 foreach (var innerContentItem in innerContentItems)
                 {
                     DocumentType documentType = null;
+                    Guid documentTypeGuid;
                     var documentTypeAlias = innerContentItem["icContentTypeAlias"];
                     var documentTypeGuidString = innerContentItem["icContentTypeGuid"];
                     if (documentTypeAlias != null)
@@ -120,7 +122,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                         var documentTypeAliasString = documentTypeAlias.ToString();
                         documentType = GetDocumentType(documentTypeAliasString, resolvedDocTypes);
                     }
-                    else if (documentTypeGuidString != null && Guid.TryParse(documentTypeGuidString.ToString(), out var documentTypeGuid))
+                    else if (documentTypeGuidString != null && Guid.TryParse(documentTypeGuidString.ToString(), out documentTypeGuid))
                     {
                         documentType = GetDocumentType(documentTypeGuid, resolvedDocTypes);
                     }
