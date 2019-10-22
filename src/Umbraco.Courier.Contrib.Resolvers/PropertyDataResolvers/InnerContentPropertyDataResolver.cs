@@ -227,7 +227,8 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
         private DocumentType GetDocumentType(string docTypeAlias, IDictionary<string, DocumentType> cache)
         {
             //don't look it up if we already have done that
-            if (!cache.TryGetValue(docTypeAlias, out var documentType))
+            DocumentType documentType;
+            if (!cache.TryGetValue(docTypeAlias, out documentType))
             {
                 documentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(docTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
                 cache[docTypeAlias] = documentType;
@@ -238,7 +239,8 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
         private DocumentType GetDocumentType(Guid docTypeGuid, IDictionary<string, DocumentType> cache)
         {
             //don't look it up if we already have done that
-            if (!cache.TryGetValue(docTypeGuid.ToString(), out var documentType))
+            DocumentType documentType;
+            if (!cache.TryGetValue(docTypeGuid.ToString(), out documentType))
             {
                 var matchingContentType = ApplicationContext.Current.Services.ContentTypeService.GetAllContentTypes().FirstOrDefault(c => c.Key == docTypeGuid);
                 if (matchingContentType != null)
