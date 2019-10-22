@@ -48,7 +48,7 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 
         private void AddDataTypeDependencies(DataType item)
         {
-            if (item == null || item.Prevalues == null || item.Prevalues.Count == 0)
+            if (item?.Prevalues == null || item.Prevalues.Count == 0)
                 return;
 
             var json = item.Prevalues.FirstOrDefault(x => x.Alias.InvariantEquals("contentTypes"));
@@ -63,13 +63,22 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 
             foreach (var contentType in contentTypes)
             {
-                var alias = contentType["icContentTypeAlias"];
-                if (alias == null)
+                DocumentType documentType = null;
+                var documentTypeAlias = contentType["icContentTypeAlias"];
+                var documentTypeGuidString = contentType["icContentTypeGuid"];
+                if (documentTypeAlias != null)
+                {
+                    var documentTypeAliasString = documentTypeAlias.ToString();
+                    documentType = GetDocumentType(documentTypeAliasString, resolvedDocTypes);
+                }
+                else if (documentTypeGuidString != null && Guid.TryParse(documentTypeGuidString.ToString(), out var documentTypeGuid))
+                {
+                    documentType = GetDocumentType(documentTypeGuid, resolvedDocTypes);
+                }
+                else
+                {
                     continue;
-
-                var documentType = GetDocumentType(alias.ToString(), resolvedDocTypes);
-                if (documentType == null)
-                    continue;
+                }
 
                 item.Dependencies.Add(documentType.UniqueId.ToString(), ItemProviderIds.documentTypeItemProviderGuid);
             }
@@ -103,15 +112,22 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 
                 foreach (var innerContentItem in innerContentItems)
                 {
-                    // get the document type for the item, if it can't be found, skip to the next item
+                    DocumentType documentType = null;
                     var documentTypeAlias = innerContentItem["icContentTypeAlias"];
-                    if (documentTypeAlias == null)
+                    var documentTypeGuidString = innerContentItem["icContentTypeGuid"];
+                    if (documentTypeAlias != null)
+                    {
+                        var documentTypeAliasString = documentTypeAlias.ToString();
+                        documentType = GetDocumentType(documentTypeAliasString, resolvedDocTypes);
+                    }
+                    else if (documentTypeGuidString != null && Guid.TryParse(documentTypeGuidString.ToString(), out var documentTypeGuid))
+                    {
+                        documentType = GetDocumentType(documentTypeGuid, resolvedDocTypes);
+                    }
+                    else
+                    {
                         continue;
-
-                    var documentTypeAliasString = documentTypeAlias.ToString();
-                    var documentType = GetDocumentType(documentTypeAliasString, resolvedDocTypes);
-                    if (documentType == null)
-                        continue;
+                    }
 
                     // get the properties available on the document type
                     var propertyTypes = documentType.Properties;
@@ -208,12 +224,26 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
 
         private DocumentType GetDocumentType(string docTypeAlias, IDictionary<string, DocumentType> cache)
         {
-            DocumentType documentType;
             //don't look it up if we already have done that
-            if (cache.TryGetValue(docTypeAlias, out documentType) == false)
+            if (!cache.TryGetValue(docTypeAlias, out var documentType))
             {
                 documentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(docTypeAlias, ItemProviderIds.documentTypeItemProviderGuid));
                 cache[docTypeAlias] = documentType;
+            }
+            return documentType;
+        }
+
+        private DocumentType GetDocumentType(Guid docTypeGuid, IDictionary<string, DocumentType> cache)
+        {
+            //don't look it up if we already have done that
+            if (!cache.TryGetValue(docTypeGuid.ToString(), out var documentType))
+            {
+                var matchingContentType = ApplicationContext.Current.Services.ContentTypeService.GetAllContentTypes().FirstOrDefault(c => c.Key == docTypeGuid);
+                if (matchingContentType != null)
+                {
+                    documentType = ExecutionContext.DatabasePersistence.RetrieveItem<DocumentType>(new ItemIdentifier(matchingContentType.Alias, ItemProviderIds.documentTypeItemProviderGuid));
+                    cache[docTypeGuid.ToString()] = documentType;
+                }
             }
             return documentType;
         }
