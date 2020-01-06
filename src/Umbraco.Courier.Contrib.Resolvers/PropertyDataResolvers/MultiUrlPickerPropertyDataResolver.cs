@@ -24,7 +24,17 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
             if (propertyData == null || propertyData.Value == null)
                 return;
 
-            var links = JsonConvert.DeserializeObject<JArray>(propertyData.Value.ToString());
+            JArray links;
+            try
+            {
+                links = JsonConvert.DeserializeObject<JArray>(propertyData.Value.ToString());
+            }
+            catch (Exception ex)
+            {
+                CourierLogHelper.Error<MultiUrlPickerPropertyDataResolver>(String.Format("There was a problem deserializing RJP.MultiUrlPicker data: {0}", propertyData.Value.ToString()), ex);
+                throw;
+            }
+
             if (links == null)
                 return;
 
