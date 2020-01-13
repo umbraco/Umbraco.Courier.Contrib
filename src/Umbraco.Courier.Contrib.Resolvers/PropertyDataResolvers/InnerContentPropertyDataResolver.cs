@@ -67,14 +67,14 @@ namespace Umbraco.Courier.Contrib.Resolvers.PropertyDataResolvers
                 Guid documentTypeGuid;
                 var documentTypeAlias = contentType["icContentTypeAlias"];
                 var documentTypeGuidString = contentType["icContentTypeGuid"];
-                if (documentTypeAlias != null)
+                if (documentTypeGuidString != null && Guid.TryParse(documentTypeGuidString.ToString(), out documentTypeGuid))
+                {
+                    documentType = GetDocumentType(documentTypeGuid, resolvedDocTypes);
+                }
+                else if (documentTypeAlias != null)
                 {
                     var documentTypeAliasString = documentTypeAlias.ToString();
                     documentType = GetDocumentType(documentTypeAliasString, resolvedDocTypes);
-                }
-                else if (documentTypeGuidString != null && Guid.TryParse(documentTypeGuidString.ToString(), out documentTypeGuid))
-                {
-                    documentType = GetDocumentType(documentTypeGuid, resolvedDocTypes);
                 }
                 else
                 {
